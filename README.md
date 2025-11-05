@@ -37,7 +37,7 @@
 ├── role/ # Основные задачи
 ├── ansible.cfg / # Натсройки Ansbile для всех хостов
 ├── main_head.yml / # Основной playbook
-├── README.md
+└──  README.md
 
 ---
 
