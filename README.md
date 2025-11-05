@@ -1,38 +1,62 @@
-Role Name
-=========
+# Ansible Role: OpenVPN Installation via angristan/openvpn-install
 
-A brief description of the role goes here.
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
-Requirements
-------------
+Эта роль автоматизирует развертывание **OpenVPN-сервера** на Linux-хостах с использованием проверенного скрипта [`angristan/openvpn-install`](https://github.com/angristan/openvpn-install).  
+Подходит для быстрого и безопасного запуска собственного VPN-сервера в облаке, на VPS или локальном сервере.
 
-Any pre-requisites that may not be covered by Ansible itself or the role should be mentioned here. For instance, if the role uses the EC2 module, it may be a good idea to mention in this section that the boto package is required.
+> 💡 **Важно**: Роль предназначена **только для новых установок** или управляемых через Ansible инфраструктур. Не рекомендуется применять к уже настроенным вручную OpenVPN-серверам без полного понимания последствий.
 
-Role Variables
---------------
+---
 
-A description of the settable variables for this role should go here, including any variables that are in defaults/main.yml, vars/main.yml, and any variables that can/should be set via parameters to the role. Any variables that are read from other roles and/or the global scope (ie. hostvars, group vars, etc.) should be mentioned here as well.
+## 📦 Поддерживаемые ОС
 
-Dependencies
-------------
+Роль наследует поддержку ОС от оригинального скрипта:
 
-A list of other roles hosted on Galaxy should go here, plus any details in regards to parameters that may need to be set for other roles, or variables that are used from other roles.
+- **Debian** 12+
+- **Ubuntu** 22.04+
 
-Example Playbook
-----------------
+> 🔧 Требуется `systemd` и включенный TUN-модуль.
 
-Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too:
+---
 
-    - hosts: servers
-      roles:
-         - { role: username.rolename, x: 42 }
+## 🚀 Возможности
 
-License
--------
+- Автоматическая установка и настройка OpenVPN
+- Генерация клиентских конфигураций (`.ovpn`)
+- Поддержка автоматического (headless) режима
+- Идемпотентность: безопасно запускать повторно
+- Управление клиентами: добавление новых пользователей
+- Безопасные настройки по умолчанию (AES-128-GCM, TLS 1.2+, tls-crypt и др.)
 
-BSD
+---
 
-Author Information
-------------------
+## 📁 Структура проекта
+├── group_vars/ # Значения переменных по умолчанию
+├── inventory/ # Обозначение хостов
+├── role/ # Основные задачи
+├── ansible.cfg / # Натсройки Ansbile для всех хостов
+├── main_head.yml / # Основной playbook
+├── README.md
 
-An optional section for the role authors to include contact information, or a website (HTML is not allowed).
+---
+
+## ⚙️ Переменные
+
+Основные настраиваемые параметры (указываются в `vars`, `group_vars` или при вызове роли):
+
+| Переменная             | По умолчанию       | Описание |
+|------------------------|--------------------|---------|
+| `openvpn_clients`      | `["client1"]`      | Список имён клиентов для генерации конфигураций |
+| `openvpn_recreate`     | `false`            | Если `true` — сначала отзывает существующих клиентов (полезно для пересоздания) |
+| `openvpn_script_path`  | `/root/openvpn-install.sh` | Путь к скрипту на целевом хосте |
+| `openvpn_download_url` | URL к `raw.githubusercontent.com` | Откуда скачивать скрипт |
+
+Пример использования:
+
+```yaml
+openvpn_clients:
+  - laptop
+  - phone
+  - tablet
+openvpn_recreate: true
