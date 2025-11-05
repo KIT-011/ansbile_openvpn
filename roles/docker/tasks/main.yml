@@ -1,0 +1,51 @@
+---
+- name: Update and upgrade apt packages
+  become: true
+  ansible.builtin.apt:
+    update_cache: true
+    upgrade: true
+
+
+- name: Install main packages
+  ansible.builtin.apt:
+    name:
+      - ca-certificates
+      - curl
+      - gnupg
+      - lsb-release
+      - tree
+      - htop
+      - rsync
+    state: present
+
+- name: Add docker official gpg key
+  ansible.builtin.apt_key:
+    url: "https://download.docker.com/linux/{{ 'ubuntu' if ansible_distribution == 'Ubuntu' else 'debian' }}/gpg"
+    state: present
+
+- name: Add docker repository
+  ansible.builtin.apt_repository:
+    repo: deb https://download.docker.com/linux/{{ 'ubuntu' if ansible_distribution == 'Ubuntu' else 'debian' }}
+      {{ ansible_distribution_release }} stable
+    state: present
+
+- name: Update and upgrade apt packages
+  become: true
+  ansible.builtin.apt:
+    update_cache: true
+    upgrade: true
+
+- name: Update and upgrade apt packages
+  become: true
+  ansible.builtin.apt:
+    update_cache: true
+
+- name: Install docker
+  ansible.builtin.apt:
+    name:
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+      - docker-buildx-plugin
+      - docker-compose-plugin
+    state: present

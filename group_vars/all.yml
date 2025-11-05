@@ -1,0 +1,13 @@
+---
+# OpenVPN
+openvpn_port: 1195
+openvpn_config_dir: /etc/openvpn-client-configs
+openvpn_clients:
+  - client1
+  - client2
+  - client3
+
+# Nginx/File Browser
+nginx_port: 80
+nginx_host_dir: "{{ openvpn_config_dir }}"
+filebrowser: "/etc/filebrowser"

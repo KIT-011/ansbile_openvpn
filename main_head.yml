@@ -1,0 +1,7 @@
+- name: OpenVPN + filebrowser via Docker
+  hosts: dep
+  become: true
+  roles:
+    - docker
+    - openvpn
+    - nginx-filebrowser

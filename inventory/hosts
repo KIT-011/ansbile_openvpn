@@ -1,0 +1,3 @@
+[dep]
+dep ansible_host=<ip>> ansible_user=<user_name> ansible_password=<user_password>
+

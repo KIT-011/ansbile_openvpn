@@ -1,0 +1,78 @@
+- name: Create directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0777'
+  loop:
+    - "{{ openvpn_config_dir }}"
+    - "{{ filebrowser }}/filebrowser_db"
+    - "{{ filebrowser }}/filebrowser_config"
+
+- name: Check if FileBrowser database already exists
+  ansible.builtin.stat:
+    path: "{{ filebrowser }}/filebrowser_db/filebrowser.db"
+  register: filebrowser_db
+
+- name: Run FileBrowser container (first-time setup)
+  community.docker.docker_container:
+    name: filebrowser
+    image: filebrowser/filebrowser
+    state: started
+    restart_policy: unless-stopped
+    ports:
+      - "{{ nginx_port }}:80"
+    volumes:
+      - "{{ openvpn_config_dir }}:/srv"
+      - "{{ filebrowser }}/filebrowser_db:/database"
+      - "{{ filebrowser }}/filebrowser_config:/config"
+    command: "--baseurl=\"\" --address=0.0.0.0"
+  when: not filebrowser_db.stat.exists
+
+- name: Wait for initial password generation (only on first run)
+  ansible.builtin.wait_for:
+    path: "{{ filebrowser }}/filebrowser_db/filebrowser.db"
+    state: present
+    timeout: 15
+  when: not filebrowser_db.stat.exists
+
+- name: Extract and save initial password (only once)
+  block:
+    - name: Get password from logs
+      ansible.builtin.shell: |
+        docker logs filebrowser 2>&1 | grep -o 'password: [^ ]*' | cut -d' ' -f2
+      register: password_extract
+      retries: 10
+      delay: 3
+      until: password_extract.stdout != ""
+      changed_when: false
+
+    - name: Save password to file
+      ansible.builtin.copy:
+        content: "{{ password_extract.stdout }}"
+        dest: "{{ filebrowser }}/filebrowser_password.txt"
+        mode: '0760'
+      changed_when: false
+
+    - name: Display initial credentials
+      ansible.builtin.debug:
+        msg: |
+          🔑 FileBrowser admin password (save it!):
+          URL: http://{{ ansible_host }}:{{ nginx_port }}
+          User: admin
+          Password: {{ password_extract.stdout }}
+  when: not filebrowser_db.stat.exists
+
+- name: Ensure FileBrowser is running (idempotent restart if needed)
+  community.docker.docker_container:
+    name: filebrowser
+    image: filebrowser/filebrowser
+    state: started
+    restart_policy: unless-stopped
+    ports:
+      - "{{ nginx_port }}:80"
+    volumes:
+      - "{{ openvpn_config_dir }}:/srv"
+      - "{{ filebrowser }}/filebrowser_db:/database"
+      - "{{ filebrowser }}/filebrowser_config:/config"
+    command: "--baseurl=\"\" --address=0.0.0.0"
+  when: filebrowser_db.stat.exists
