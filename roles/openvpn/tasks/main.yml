@@ -7,14 +7,14 @@
 - name: Download OpenVPN install script
   ansible.builtin.get_url:
     url: https://raw.githubusercontent.com/angristan/openvpn-install/master/openvpn-install.sh
-    dest: "~/openvpn-install.sh"
+    dest: /root/openvpn-install.sh
     mode: '0755'
     owner: "{{ ansible_user_id }}"
     group: "{{ ansible_user_id }}"
-  # when: not openvpn_installed.stat.exists
+  when: not openvpn_installed.stat.exists
 
 - name: Install OpenVPN
-  ansible.builtin.command: "~/openvpn-install.sh"
+  ansible.builtin.command: "/root/openvpn-install.sh"
   when: not openvpn_installed.stat.exists
   changed_when: false
   environment:
@@ -33,15 +33,16 @@
     path: /etc/openvpn/server.conf
   register: openvpn_installed
 
-- name: Create config OpenVPN
-  ansible.builtin.command: "~/openvpn-install.sh"
-  environment:
-    MENU_OPTION: "1"
-    CLIENT: "{{ item }}"
-    PASS: "1"
+- name: Generate OpenVPN configs with expect
+  ansible.builtin.expect:
+    command: /root/openvpn-install.sh
+    responses:
+      "Select an option \\[1-4\\]:": "1"
+      "Client name:": "{{ item }}"
+      "Select an option \\[1-2\\]:": ""
+    timeout: 10
   loop: "{{ openvpn_clients }}"
   when: openvpn_installed.stat.exists
-  changed_when: false
 
 - name: Check configs directory
   ansible.builtin.file:
@@ -53,7 +54,7 @@
 
 - name: Copy all configs to nginx directory
   ansible.builtin.copy:
-    src: "~/{{ item }}.ovpn"
+    src: "/home/{{ ansible_user }}/{{ item }}.ovpn"
     dest: "{{ openvpn_config_dir }}/{{ item }}.ovpn"
     remote_src: true
     owner: "{{ ansible_user }}"

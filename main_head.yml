@@ -4,4 +4,4 @@
   roles:
     - docker
     - openvpn
-    - nginx-filebrowser
+    - filebrowser
