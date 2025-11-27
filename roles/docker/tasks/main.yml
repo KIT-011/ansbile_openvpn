@@ -16,6 +16,7 @@
       - tree
       - htop
       - rsync
+      - python3-pexpect
     state: present
 
 - name: Add docker official gpg key

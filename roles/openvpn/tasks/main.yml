@@ -52,7 +52,18 @@
     group: "{{ ansible_user }}"
     mode: '0755'
 
-- name: Copy all configs to nginx directory
+- name: Copy all configs to nginx directory if user root
+  ansible.builtin.copy:
+    src: "/{{ ansible_user }}/{{ item }}.ovpn"
+    dest: "{{ openvpn_config_dir }}/{{ item }}.ovpn"
+    remote_src: true
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: '0644'
+  loop: "{{ openvpn_clients }}"
+  when: ansible_user == 'root'
+
+- name: Copy all configs to nginx directory if user NOT root
   ansible.builtin.copy:
     src: "/home/{{ ansible_user }}/{{ item }}.ovpn"
     dest: "{{ openvpn_config_dir }}/{{ item }}.ovpn"
@@ -61,3 +72,4 @@
     group: "{{ ansible_user }}"
     mode: '0644'
   loop: "{{ openvpn_clients }}"
+  when: not ansible_user == 'root'

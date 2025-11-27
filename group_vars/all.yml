@@ -7,7 +7,6 @@ openvpn_clients:
   - client2
   - client3
 
-# Nginx/File Browser
-nginx_port: 80
-nginx_host_dir: "{{ openvpn_config_dir }}"
+#File Browser
+web_port: 80
 filebrowser: "/etc/filebrowser"

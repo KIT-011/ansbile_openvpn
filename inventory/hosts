@@ -1,2 +1,2 @@
 [dep]
-dep ansible_host=IP_ADDRESS ansible_user=LOGIN ansible_password="PASSWORD"
+dep ansible_host=<IP_ADDRESS> ansible_user=<USER> ansible_password=<PASSWORD>
